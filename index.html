@@ -298,23 +298,20 @@ form.addEventListener("submit",async e=>{
   statusBox.className="status";
 
   try{
-    const {data,error}=await supabaseClient
-      .from("whitelist_entries")
-      .insert({
-        twitter_username:twitterUsername,
-        wallet_address:walletAddress,
-        follow_task:true,
-        like_task:true,
-        repost_comment_task:true
-      })
-      .select()
-      .single();
+    const {data,error}=await supabaseClient.rpc(
+      "submit_whitelist_entry",
+      {
+        p_twitter_username: twitterUsername,
+        p_wallet_address: walletAddress
+      }
+    );
 
     if(error){
-      if(error.code==="23505"){
-        throw new Error("THIS X USERNAME OR WALLET IS ALREADY REGISTERED.");
-      }
-      throw error;
+      throw new Error(error.message || "SUBMISSION FAILED. CHECK THE WHITELIST RPC FUNCTION.");
+    }
+
+    if(!data || data.success !== true){
+      throw new Error(data?.message || "SUBMISSION FAILED. PLEASE TRY AGAIN.");
     }
 
     console.log("Whitelist entry:",data);
