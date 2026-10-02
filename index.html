@@ -41,10 +41,46 @@ h1{margin:0 0 16px;font-family:"Press Start 2P";font-size:clamp(28px,5vw,52px);l
 .form-grid{display:grid;grid-template-columns:1fr 1fr;gap:16px}.field label{display:block;margin-bottom:8px;color:#9ddfff;font-family:"Press Start 2P";font-size:8px}
 .field input{width:100%;border:3px solid var(--line);background:#fff;color:var(--ink);padding:14px;outline:none;font-size:14px;font-weight:700}.field input:focus{box-shadow:4px 4px 0 var(--cyan)}
 .form-note{margin-top:12px;color:#9fb4bf;font-size:11px;line-height:1.5}.submit-row{margin-top:20px}
+
+.submit-complete{
+  margin-top:20px;
+  padding:18px;
+  background:#dff8ea;
+  color:#21885d;
+  border:4px solid #21885d;
+  box-shadow:5px 5px 0 var(--line);
+  font-family:"Press Start 2P";
+  font-size:10px;
+  line-height:1.7;
+  text-align:center;
+}
+.submit-complete small{
+  display:block;
+  margin-top:8px;
+  color:#426c5a;
+  font-family:"Space Grotesk",sans-serif;
+  font-size:12px;
+  line-height:1.5;
+}
+
 .status{margin-top:16px;padding:13px;background:#fff;color:var(--ink);border:3px solid var(--line);font-size:13px;font-weight:800;line-height:1.5;display:none}.status.show{display:block}.status.success{border-color:#21885d;background:#dff8ea}.status.error{border-color:#b22d2d;background:#fff0f0}
 .info{margin-top:22px;background:#fff;border:4px solid var(--line);box-shadow:6px 6px 0 var(--line);padding:20px}.info strong{display:block;font-family:"Press Start 2P";font-size:10px;margin-bottom:10px}.info span{color:var(--muted);font-size:12px;line-height:1.6}
 footer{border-top:4px solid var(--line);background:#fff;padding:28px 0 40px}.footer{display:flex;justify-content:space-between;gap:20px;color:var(--muted);font-size:13px;font-weight:700}
 .reveal{opacity:0;transform:translateY(20px)}.reveal.visible{opacity:1;transform:none;transition:opacity .65s ease,transform .65s ease}
+
+
+.loading-modal{width:min(500px,100%);background:#fff;border:5px solid var(--line);box-shadow:12px 12px 0 #0b1720;text-align:center;overflow:hidden}
+.loading-top{padding:12px 16px;background:#dceaf2;border-bottom:4px solid var(--line);font-family:"Press Start 2P";font-size:9px;text-align:left}
+.loading-body{padding:34px 24px 30px}
+.loading-body h2{margin:0 0 14px;font-family:"Press Start 2P";font-size:18px;line-height:1.5}
+.loading-body p{margin:0 0 24px;color:var(--muted);font-size:14px;line-height:1.6}
+.loader-pixel{width:58px;height:58px;margin:0 auto 22px;border:4px solid var(--line);background:var(--blue);display:grid;place-items:center;box-shadow:6px 6px 0 var(--line);animation:loaderPulse .9s ease-in-out infinite alternate}
+.loader-pixel span{width:20px;height:20px;background:#fff;display:block;animation:loaderSpin .8s linear infinite}
+.loading-bar{height:14px;border:3px solid var(--line);background:#dceaf2;overflow:hidden}
+.loading-bar span{display:block;width:0;height:100%;background:var(--cyan);animation:loadingProgress 1.8s ease-out forwards}
+@keyframes loaderPulse{from{transform:scale(.92)}to{transform:scale(1.05)}}
+@keyframes loaderSpin{from{transform:rotate(0deg)}to{transform:rotate(90deg)}}
+@keyframes loadingProgress{0%{width:0}100%{width:100%}}
 
 .modal-backdrop{position:fixed;inset:0;z-index:1000;display:none;align-items:center;justify-content:center;padding:20px;background:rgba(10,25,35,.78);backdrop-filter:blur(5px)}
 .modal-backdrop.show{display:flex}
@@ -122,11 +158,24 @@ footer{border-top:4px solid var(--line);background:#fff;padding:28px 0 40px}.foo
 </form>
 </section>
 
-<div class="info reveal"><strong>WHITELIST SYSTEM</strong><span>One X username and one wallet address can be registered only once. X tasks use a 10-second completion timer and do not require X authentication. Complete the action on X while the timer runs, then submit your entry.</span></div>
+<div class="info reveal"><strong>WHITELIST SYSTEM</strong><span>Complete all 3 X tasks, then submit your X username and EVM wallet address. Each X username and wallet can be registered only once.</span></div>
 
 </div></main>
 
 <footer><div class="wrap footer"><div><b>THE HOOD ROVER</b></div><div>RETRO SYSTEM // 2026</div></div></footer>
+
+
+<div class="modal-backdrop" id="loadingModal" aria-hidden="true">
+  <div class="loading-modal">
+    <div class="loading-top">WHITELIST.EXE // PROCESSING</div>
+    <div class="loading-body">
+      <div class="loader-pixel"><span></span></div>
+      <h2>SUBMITTING...</h2>
+      <p>Registering your whitelist entry.<br>Please wait a moment.</p>
+      <div class="loading-bar"><span id="loadingBarFill"></span></div>
+    </div>
+  </div>
+</div>
 
 <div class="modal-backdrop" id="successModal" role="dialog" aria-modal="true" aria-labelledby="successTitle">
   <div class="success-modal">
@@ -157,6 +206,7 @@ const X_TASK_URLS={
 
 const TASK_DURATION=10000;
 const TASK_STORAGE_KEY="hoodRoverWhitelistTasks";
+const SUBMITTED_STORAGE_KEY="hoodRoverWhitelistSubmitted";
 
 const followButton=document.getElementById("followButton");
 const likeButton=document.getElementById("likeButton");
@@ -167,6 +217,7 @@ const engageState=document.getElementById("engageState");
 const form=document.getElementById("whitelistForm");
 const submitButton=document.getElementById("submitButton");
 const statusBox=document.getElementById("statusBox");
+const loadingModal=document.getElementById("loadingModal");
 const successModal=document.getElementById("successModal");
 const closeSuccess=document.getElementById("closeSuccess");
 
@@ -202,6 +253,44 @@ function updateTaskUI(){
       button.style.pointerEvents="";
     }
   });
+}
+
+
+function showSubmittedState(){
+  const submitRow=document.querySelector(".submit-row");
+  const formGrid=document.querySelector(".form-grid");
+  const formNote=document.querySelector(".form-note");
+
+  if(formGrid) formGrid.style.display="none";
+  if(formNote) formNote.style.display="none";
+
+  if(submitRow){
+    submitRow.innerHTML=`
+      <div class="submit-complete" style="grid-column:1/-1">
+        ✓ ALREADY SUBMITTED
+        <small>Your whitelist entry has already been registered.</small>
+      </div>
+    `;
+  }
+}
+
+function saveSubmittedState(username,wallet){
+  localStorage.setItem(SUBMITTED_STORAGE_KEY,JSON.stringify({
+    submitted:true,
+    twitter_username:username,
+    wallet_address:wallet
+  }));
+}
+
+function loadSubmittedState(){
+  try{
+    const saved=JSON.parse(localStorage.getItem(SUBMITTED_STORAGE_KEY)||"null");
+    if(saved && saved.submitted===true){
+      showSubmittedState();
+      return true;
+    }
+  }catch(e){}
+  return false;
 }
 
 function startXTask(key,button,stateEl){
@@ -252,6 +341,18 @@ function isValidEvmAddress(v){
   return /^0x[a-fA-F0-9]{40}$/.test(String(v||"").trim());
 }
 
+
+function openLoadingModal(){
+  loadingModal.classList.add("show");
+  loadingModal.setAttribute("aria-hidden","false");
+  document.body.style.overflow="hidden";
+}
+
+function closeLoadingModal(){
+  loadingModal.classList.remove("show");
+  loadingModal.setAttribute("aria-hidden","true");
+}
+
 function openSuccessModal(){
   successModal.classList.add("show");
   document.body.style.overflow="hidden";
@@ -260,6 +361,7 @@ function openSuccessModal(){
 function closeSuccessModal(){
   successModal.classList.remove("show");
   document.body.style.overflow="";
+  updateTaskUI();
 }
 
 closeSuccess.onclick=closeSuccessModal;
@@ -274,6 +376,8 @@ document.addEventListener("keydown",(e)=>{
 
 form.addEventListener("submit",async e=>{
   e.preventDefault();
+
+  if(loadSubmittedState()) return;
 
   const twitterUsername=normalizeUsername(document.getElementById("twitterUsername").value);
   const walletAddress=document.getElementById("walletAddress").value.trim().toLowerCase();
@@ -298,6 +402,8 @@ form.addEventListener("submit",async e=>{
   statusBox.className="status";
 
   try{
+    openLoadingModal();
+
     const {data,error}=await supabaseClient.rpc(
       "submit_whitelist_entry",
       {
@@ -317,13 +423,21 @@ form.addEventListener("submit",async e=>{
     console.log("Whitelist entry:",data);
 
     form.reset();
-    taskState={follow:false,like:false,engage:false};
+
+    // Keep completed tasks and permanently mark this browser as submitted.
     saveTaskState();
     updateTaskUI();
+    saveSubmittedState(twitterUsername, walletAddress);
+    showSubmittedState();
 
-    openSuccessModal();
+    closeLoadingModal();
+
+    setTimeout(()=>{
+      openSuccessModal();
+    },700);
 
   }catch(error){
+    closeLoadingModal();
     console.error("Whitelist submission error:",error);
     showStatus(error.message||"SUBMISSION FAILED. PLEASE TRY AGAIN.","error");
   }finally{
@@ -343,6 +457,7 @@ const observer=new IntersectionObserver(entries=>{
 
 document.querySelectorAll(".reveal").forEach(el=>observer.observe(el));
 loadTaskState();
+loadSubmittedState();
 </script>
 </body>
 </html>
