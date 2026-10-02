@@ -4,1411 +4,348 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>WHITELIST — The Hood Rover</title>
-
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-
 <style>
 @import url('https://fonts.googleapis.com/css2?family=Press+Start+2P&family=Space+Grotesk:wght@400;500;600;700&display=swap');
+:root{--ink:#14232e;--line:#173044;--blue:#2f8cff;--cyan:#16c8e8;--yellow:#ffd84d;--cream:#fffaf0;--paper:#f3f7fa;--muted:#687985;--green:#42c98b}
+*{box-sizing:border-box}html{scroll-behavior:smooth}
+body{margin:0;color:var(--ink);background:var(--paper);font-family:"Space Grotesk",sans-serif;overflow-x:hidden}
+body::before{content:"";position:fixed;inset:0;pointer-events:none;z-index:-2;opacity:.13;background-image:linear-gradient(rgba(20,50,70,.16) 1px,transparent 1px),linear-gradient(90deg,rgba(20,50,70,.16) 1px,transparent 1px);background-size:24px 24px}
+body::after{content:"";position:fixed;inset:0;pointer-events:none;z-index:50;background:repeating-linear-gradient(0deg,transparent 0 3px,rgba(20,40,55,.035) 3px 4px)}
+a{color:inherit;text-decoration:none}button,input{font-family:inherit}
+.wrap{width:min(1160px,calc(100% - 32px));margin:auto}
+header{position:sticky;top:0;z-index:30;min-height:76px;display:flex;align-items:center;padding:10px max(16px,calc((100% - 1160px)/2));background:rgba(255,250,240,.95);backdrop-filter:blur(12px);border-bottom:3px solid var(--line)}
+.brand{display:flex;align-items:center;gap:10px;font-family:"Press Start 2P";font-size:11px;line-height:1.5;white-space:nowrap}
+.mark{width:38px;height:38px;display:block;overflow:hidden;background:var(--blue);border:3px solid var(--line);box-shadow:3px 3px 0 var(--line);flex-shrink:0}
+.mark img{width:100%;height:100%;display:block;object-fit:cover}
+main{padding:55px 0 90px}.hero{margin-bottom:28px}
+.window{background:#fff;border:4px solid var(--line);box-shadow:8px 8px 0 var(--line)}
+.window-bar{min-height:42px;display:flex;justify-content:space-between;align-items:center;padding:9px 13px;background:#dceaf2;border-bottom:4px solid var(--line);font-family:"Press Start 2P";font-size:9px}
+.window-lights{display:flex;gap:6px}.light{width:12px;height:12px;border:2px solid var(--line);background:#fff}.light:nth-child(2){background:var(--yellow)}.light:nth-child(3){background:var(--cyan)}
+.hero-content{padding:34px;text-align:center}.eyebrow{display:inline-block;margin-bottom:16px;color:var(--blue);font-family:"Press Start 2P";font-size:10px}
+h1{margin:0 0 16px;font-family:"Press Start 2P";font-size:clamp(28px,5vw,52px);line-height:1.25;letter-spacing:-2px}
+.hero-text{max-width:720px;margin:0 auto;color:var(--muted);font-size:17px;line-height:1.65}
+.task-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:20px;margin-top:22px}
+.card{background:#fff;border:4px solid var(--line);box-shadow:6px 6px 0 var(--line);padding:22px;transition:.2s ease}
+.card:hover{transform:translate(-3px,-4px);box-shadow:10px 10px 0 var(--line)}
+.card-head{display:flex;justify-content:space-between;align-items:flex-start;gap:15px;margin-bottom:18px}
+.card-icon{width:48px;height:48px;display:grid;place-items:center;border:3px solid var(--line);background:#dff7ff;font-size:22px}
+.card-tag{padding:7px 8px;border:2px solid var(--line);background:var(--cream);font-family:"Press Start 2P";font-size:7px}
+.card h3{margin:0 0 9px;font-family:"Press Start 2P";font-size:13px;line-height:1.6}
+.card p{margin:0 0 18px;color:var(--muted);font-size:14px;line-height:1.55}
+.btn{display:inline-flex;justify-content:center;align-items:center;gap:8px;width:100%;border:3px solid var(--line);background:var(--blue);color:#fff;padding:13px 16px;font-family:"Press Start 2P";font-size:9px;box-shadow:5px 5px 0 var(--line);cursor:pointer;transition:.15s ease}
+.btn:hover{transform:translate(2px,2px);box-shadow:3px 3px 0 var(--line)}.btn.secondary{background:#fff;color:var(--ink)}.btn.yellow{background:var(--yellow);color:var(--ink)}.btn:disabled{opacity:.6;cursor:not-allowed}
+.btn.loading{opacity:.65;cursor:wait}.task-state{margin-top:13px;min-height:18px;color:var(--muted);font-size:11px;font-weight:800;text-align:center}.task-state.done{color:#21885d}
+.submit-box{margin-top:22px;background:#173044;color:#fff;border:4px solid var(--line);box-shadow:7px 7px 0 var(--line);padding:28px}
+.submit-title{font-family:"Press Start 2P";font-size:13px;line-height:1.7;margin-bottom:9px}.submit-sub{color:#b9d1dc;font-size:13px;line-height:1.6;margin-bottom:22px}
+.form-grid{display:grid;grid-template-columns:1fr 1fr;gap:16px}.field label{display:block;margin-bottom:8px;color:#9ddfff;font-family:"Press Start 2P";font-size:8px}
+.field input{width:100%;border:3px solid var(--line);background:#fff;color:var(--ink);padding:14px;outline:none;font-size:14px;font-weight:700}.field input:focus{box-shadow:4px 4px 0 var(--cyan)}
+.form-note{margin-top:12px;color:#9fb4bf;font-size:11px;line-height:1.5}.submit-row{margin-top:20px}
+.status{margin-top:16px;padding:13px;background:#fff;color:var(--ink);border:3px solid var(--line);font-size:13px;font-weight:800;line-height:1.5;display:none}.status.show{display:block}.status.success{border-color:#21885d;background:#dff8ea}.status.error{border-color:#b22d2d;background:#fff0f0}
+.info{margin-top:22px;background:#fff;border:4px solid var(--line);box-shadow:6px 6px 0 var(--line);padding:20px}.info strong{display:block;font-family:"Press Start 2P";font-size:10px;margin-bottom:10px}.info span{color:var(--muted);font-size:12px;line-height:1.6}
+footer{border-top:4px solid var(--line);background:#fff;padding:28px 0 40px}.footer{display:flex;justify-content:space-between;gap:20px;color:var(--muted);font-size:13px;font-weight:700}
+.reveal{opacity:0;transform:translateY(20px)}.reveal.visible{opacity:1;transform:none;transition:opacity .65s ease,transform .65s ease}
 
-:root{
-  --ink:#14232e;
-  --line:#173044;
-  --blue:#2f8cff;
-  --cyan:#16c8e8;
-  --yellow:#ffd84d;
-  --cream:#fffaf0;
-  --paper:#f3f7fa;
-  --muted:#687985;
-  --green:#42c98b
-}
+.modal-backdrop{position:fixed;inset:0;z-index:1000;display:none;align-items:center;justify-content:center;padding:20px;background:rgba(10,25,35,.78);backdrop-filter:blur(5px)}
+.modal-backdrop.show{display:flex}
+.success-modal{width:min(560px,100%);background:#fff;border:5px solid var(--line);box-shadow:12px 12px 0 #0b1720;text-align:center;overflow:hidden;animation:popIn .25s ease}
+.success-top{padding:12px 16px;background:#dceaf2;border-bottom:4px solid var(--line);font-family:"Press Start 2P";font-size:9px;text-align:left}
+.success-body{padding:34px 24px 30px}
+.success-icon{width:76px;height:76px;margin:0 auto 22px;display:grid;place-items:center;background:var(--green);color:#fff;border:4px solid var(--line);box-shadow:6px 6px 0 var(--line);font-size:34px;font-weight:900}
+.success-body h2{margin:0 0 16px;font-family:"Press Start 2P";font-size:20px;line-height:1.5}
+.success-body p{margin:0 auto 24px;max-width:430px;color:var(--muted);font-size:15px;line-height:1.65}
+.success-body p strong{color:var(--ink)}
+.success-actions{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.success-actions .btn{width:100%}
+@keyframes popIn{from{opacity:0;transform:scale(.88) translateY(20px)}to{opacity:1;transform:scale(1) translateY(0)}}
 
-*{box-sizing:border-box}
-html{scroll-behavior:smooth}
-
-body{
-  margin:0;
-  color:var(--ink);
-  background:var(--paper);
-  font-family:"Space Grotesk",sans-serif;
-  overflow-x:hidden
-}
-
-body::before{
-  content:"";
-  position:fixed;
-  inset:0;
-  pointer-events:none;
-  z-index:-2;
-  opacity:.13;
-  background-image:
-    linear-gradient(rgba(20,50,70,.16) 1px,transparent 1px),
-    linear-gradient(90deg,rgba(20,50,70,.16) 1px,transparent 1px);
-  background-size:24px 24px
-}
-
-body::after{
-  content:"";
-  position:fixed;
-  inset:0;
-  pointer-events:none;
-  z-index:50;
-  background:repeating-linear-gradient(
-    0deg,
-    transparent 0 3px,
-    rgba(20,40,55,.035) 3px 4px
-  )
-}
-
-a{color:inherit;text-decoration:none}
-button,input{font-family:inherit}
-
-.wrap{
-  width:min(1160px,calc(100% - 32px));
-  margin:auto
-}
-
-header{
-  position:sticky;
-  top:0;
-  z-index:30;
-  min-height:76px;
-  display:flex;
-  align-items:center;
-  padding:10px max(16px,calc((100% - 1160px)/2));
-  background:rgba(255,250,240,.95);
-  backdrop-filter:blur(12px);
-  border-bottom:3px solid var(--line)
-}
-
-.brand{
-  display:flex;
-  align-items:center;
-  gap:10px;
-  font-family:"Press Start 2P";
-  font-size:11px;
-  line-height:1.5;
-  white-space:nowrap
-}
-
-.mark{
-  width:38px;
-  height:38px;
-  display:block;
-  overflow:hidden;
-  background:var(--blue);
-  border:3px solid var(--line);
-  box-shadow:3px 3px 0 var(--line);
-  flex-shrink:0
-}
-
-.mark img{
-  width:100%;
-  height:100%;
-  display:block;
-  object-fit:cover
-}
-
-main{
-  padding:55px 0 90px
-}
-
-.hero{
-  margin-bottom:28px
-}
-
-.window{
-  background:#fff;
-  border:4px solid var(--line);
-  box-shadow:8px 8px 0 var(--line)
-}
-
-.window-bar{
-  min-height:42px;
-  display:flex;
-  justify-content:space-between;
-  align-items:center;
-  padding:9px 13px;
-  background:#dceaf2;
-  border-bottom:4px solid var(--line);
-  font-family:"Press Start 2P";
-  font-size:9px
-}
-
-.window-lights{
-  display:flex;
-  gap:6px
-}
-
-.light{
-  width:12px;
-  height:12px;
-  border:2px solid var(--line);
-  background:#fff
-}
-
-.light:nth-child(2){background:var(--yellow)}
-.light:nth-child(3){background:var(--cyan)}
-
-.hero-content{
-  padding:34px;
-  text-align:center
-}
-
-.eyebrow{
-  display:inline-block;
-  margin-bottom:16px;
-  color:var(--blue);
-  font-family:"Press Start 2P";
-  font-size:10px
-}
-
-h1{
-  margin:0 0 16px;
-  font-family:"Press Start 2P";
-  font-size:clamp(28px,5vw,52px);
-  line-height:1.25;
-  letter-spacing:-2px
-}
-
-.hero-text{
-  max-width:720px;
-  margin:0 auto;
-  color:var(--muted);
-  font-size:17px;
-  line-height:1.65
-}
-
-.task-grid{
-  display:grid;
-  grid-template-columns:repeat(3,1fr);
-  gap:20px;
-  margin-top:22px
-}
-
-.card{
-  background:#fff;
-  border:4px solid var(--line);
-  box-shadow:6px 6px 0 var(--line);
-  padding:22px;
-  transition:.2s ease
-}
-
-.card:hover{
-  transform:translate(-3px,-4px);
-  box-shadow:10px 10px 0 var(--line)
-}
-
-.card-head{
-  display:flex;
-  justify-content:space-between;
-  align-items:flex-start;
-  gap:15px;
-  margin-bottom:18px
-}
-
-.card-icon{
-  width:48px;
-  height:48px;
-  display:grid;
-  place-items:center;
-  border:3px solid var(--line);
-  background:#dff7ff;
-  font-size:22px
-}
-
-.card-tag{
-  padding:7px 8px;
-  border:2px solid var(--line);
-  background:var(--cream);
-  font-family:"Press Start 2P";
-  font-size:7px
-}
-
-.card h3{
-  margin:0 0 9px;
-  font-family:"Press Start 2P";
-  font-size:13px;
-  line-height:1.6
-}
-
-.card p{
-  margin:0 0 18px;
-  color:var(--muted);
-  font-size:14px;
-  line-height:1.55
-}
-
-.btn{
-  display:inline-flex;
-  justify-content:center;
-  align-items:center;
-  gap:8px;
-  width:100%;
-  border:3px solid var(--line);
-  background:var(--blue);
-  color:#fff;
-  padding:13px 16px;
-  font-family:"Press Start 2P";
-  font-size:9px;
-  box-shadow:5px 5px 0 var(--line);
-  cursor:pointer;
-  transition:.15s ease
-}
-
-.btn:hover{
-  transform:translate(2px,2px);
-  box-shadow:3px 3px 0 var(--line)
-}
-
-.btn.secondary{
-  background:#fff;
-  color:var(--ink)
-}
-
-.btn.yellow{
-  background:var(--yellow);
-  color:var(--ink)
-}
-
-.btn:disabled{
-  opacity:.6;
-  cursor:not-allowed
-}
-
-.btn.loading{
-  opacity:.65;
-  cursor:wait
-}
-
-.task-state{
-  margin-top:13px;
-  min-height:18px;
-  color:var(--muted);
-  font-size:11px;
-  font-weight:800;
-  text-align:center
-}
-
-.task-state.done{
-  color:#21885d
-}
-
-.submit-box{
-  margin-top:22px;
-  background:#173044;
-  color:#fff;
-  border:4px solid var(--line);
-  box-shadow:7px 7px 0 var(--line);
-  padding:28px
-}
-
-.submit-title{
-  font-family:"Press Start 2P";
-  font-size:13px;
-  line-height:1.7;
-  margin-bottom:9px
-}
-
-.submit-sub{
-  color:#b9d1dc;
-  font-size:13px;
-  line-height:1.6;
-  margin-bottom:22px
-}
-
-.form-grid{
-  display:grid;
-  grid-template-columns:1fr 1fr;
-  gap:16px
-}
-
-.field label{
-  display:block;
-  margin-bottom:8px;
-  color:#9ddfff;
-  font-family:"Press Start 2P";
-  font-size:8px
-}
-
-.field input{
-  width:100%;
-  border:3px solid var(--line);
-  background:#fff;
-  color:var(--ink);
-  padding:14px;
-  outline:none;
-  font-size:14px;
-  font-weight:700
-}
-
-.field input:focus{
-  box-shadow:4px 4px 0 var(--cyan)
-}
-
-.form-note{
-  margin-top:12px;
-  color:#9fb4bf;
-  font-size:11px;
-  line-height:1.5
-}
-
-.submit-row{
-  margin-top:20px;
-  display:grid;
-  grid-template-columns:1fr 1fr;
-  gap:12px
-}
-
-.status{
-  margin-top:16px;
-  padding:13px;
-  background:#fff;
-  color:var(--ink);
-  border:3px solid var(--line);
-  font-size:13px;
-  font-weight:800;
-  line-height:1.5;
-  display:none
-}
-
-.status.show{display:block}
-
-.status.success{
-  border-color:#21885d;
-  background:#dff8ea
-}
-
-.status.error{
-  border-color:#b22d2d;
-  background:#fff0f0
-}
-
-.info{
-  margin-top:22px;
-  background:#fff;
-  border:4px solid var(--line);
-  box-shadow:6px 6px 0 var(--line);
-  padding:20px
-}
-
-.info strong{
-  display:block;
-  font-family:"Press Start 2P";
-  font-size:10px;
-  margin-bottom:10px
-}
-
-.info span{
-  color:var(--muted);
-  font-size:12px;
-  line-height:1.6
-}
-
-footer{
-  border-top:4px solid var(--line);
-  background:#fff;
-  padding:28px 0 40px
-}
-
-.footer{
-  display:flex;
-  justify-content:space-between;
-  gap:20px;
-  color:var(--muted);
-  font-size:13px;
-  font-weight:700
-}
-
-.reveal{
-  opacity:0;
-  transform:translateY(20px)
-}
-
-.reveal.visible{
-  opacity:1;
-  transform:none;
-  transition:opacity .65s ease,transform .65s ease
-}
-
-@media(max-width:850px){
-  .task-grid{grid-template-columns:1fr}
-  .form-grid{grid-template-columns:1fr}
-}
-
+@media(max-width:850px){.task-grid{grid-template-columns:1fr}.form-grid{grid-template-columns:1fr}}
 @media(max-width:620px){
-  .wrap{width:calc(100% - 20px)}
-  main{padding-top:30px}
-
-  header{
-    min-height:68px;
-    padding:8px 10px
-  }
-
-  .brand{
-    font-size:8px;
-    gap:7px
-  }
-
-  .brand .mark{
-    width:34px;
-    height:34px
-  }
-
-  .hero-content{padding:24px 20px}
-  h1{font-size:28px}
-  .hero-text{font-size:14px}
-  .submit-box{padding:20px 16px}
-  .submit-row{grid-template-columns:1fr}
-
-  .footer{
-    display:block
-  }
-
-  .footer div+div{
-    margin-top:10px
-  }
+.wrap{width:calc(100% - 20px)}main{padding-top:30px}header{min-height:68px;padding:8px 10px}.brand{font-size:8px;gap:7px}.brand .mark{width:34px;height:34px}.hero-content{padding:24px 20px}h1{font-size:28px}.hero-text{font-size:14px}.submit-box{padding:20px 16px}.footer{display:block}.footer div+div{margin-top:10px}
+.success-body{padding:28px 18px}.success-body h2{font-size:16px}.success-actions{grid-template-columns:1fr}
 }
 </style>
 </head>
-
 <body>
 
 <header>
-<a class="brand" href="./">
-  <span class="mark">
-    <img src="./assets/rovers/rover-01.png" alt="Hood Rover">
-  </span>
-  THE HOOD ROVER
-</a>
+<a class="brand" href="./"><span class="mark"><img src="./assets/rovers/rover-01.png" alt="Hood Rover"></span>THE HOOD ROVER</a>
 </header>
 
-<main>
-<div class="wrap">
+<main><div class="wrap">
 
 <section class="hero reveal visible">
 <div class="window">
-
-<div class="window-bar">
-<span>WHITELIST.EXE</span>
-
-<span class="window-lights">
-<i class="light"></i>
-<i class="light"></i>
-<i class="light"></i>
-</span>
-</div>
-
+<div class="window-bar"><span>WHITELIST.EXE</span><span class="window-lights"><i class="light"></i><i class="light"></i><i class="light"></i></span></div>
 <div class="hero-content">
-
-<span class="eyebrow">
-THE HOOD ROVER // EARLY ACCESS
-</span>
-
+<span class="eyebrow">THE HOOD ROVER // EARLY ACCESS</span>
 <h1>WHITELIST</h1>
-
-<p class="hero-text">
-Complete the social tasks below, then submit your X username and wallet address to register for The Hood Rover whitelist.
-</p>
-
+<p class="hero-text">Complete the social tasks below, then submit your X username and wallet address to register for The Hood Rover whitelist.</p>
 </div>
 </div>
 </section>
-
 
 <section class="task-grid">
-
-<!-- TASK 01 -->
 <article class="card reveal">
-
-<div class="card-head">
-<div class="card-icon">𝕏</div>
-<span class="card-tag">TASK 01</span>
-</div>
-
-<h3>FOLLOW US</h3>
-
-<p>
-Follow <b>@thehoodrover</b> on X. Open the profile and complete the follow task.
-</p>
-
-<a
-class="btn"
-id="followButton"
-href="https://x.com/thehoodrover"
-target="_blank"
-rel="noopener noreferrer">
-FOLLOW ON X
-</a>
-
-<div class="task-state" id="followState">
-NOT COMPLETED
-</div>
-
+<div class="card-head"><div class="card-icon">𝕏</div><span class="card-tag">TASK 01</span></div>
+<h3>FOLLOW US</h3><p>Follow <b>@thehoodrover</b> on X. Open the profile and complete the follow task.</p>
+<a class="btn" id="followButton" href="https://x.com/thehoodrover" target="_blank" rel="noopener noreferrer">FOLLOW ON X</a>
+<div class="task-state" id="followState">NOT COMPLETED</div>
 </article>
 
-
-<!-- TASK 02 -->
 <article class="card reveal">
-
-<div class="card-head">
-<div class="card-icon">♥</div>
-<span class="card-tag">TASK 02</span>
-</div>
-
-<h3>LIKE THE POST</h3>
-
-<p>
-Open the official Hood Rover post and like it from your X account.
-</p>
-
-<a
-class="btn secondary"
-id="likeButton"
-href="https://x.com/thehoodrover/status/2105640521725284569"
-target="_blank"
-rel="noopener noreferrer">
-LIKE POST
-</a>
-
-<div class="task-state" id="likeState">
-NOT COMPLETED
-</div>
-
+<div class="card-head"><div class="card-icon">♥</div><span class="card-tag">TASK 02</span></div>
+<h3>LIKE THE POST</h3><p>Open the official Hood Rover post and like it from your X account.</p>
+<a class="btn secondary" id="likeButton" href="https://x.com/thehoodrover/status/2105640521725284569" target="_blank" rel="noopener noreferrer">LIKE POST</a>
+<div class="task-state" id="likeState">NOT COMPLETED</div>
 </article>
 
-
-<!-- TASK 03 -->
 <article class="card reveal">
-
-<div class="card-head">
-<div class="card-icon">↻</div>
-<span class="card-tag">TASK 03</span>
-</div>
-
-<h3>REPOST + COMMENT</h3>
-
-<p>
-Open the official post, repost it and leave a genuine comment.
-</p>
-
-<a
-class="btn yellow"
-id="engageButton"
-href="https://x.com/thehoodrover/status/2105640521725284569"
-target="_blank"
-rel="noopener noreferrer">
-OPEN X POST
-</a>
-
-<div class="task-state" id="engageState">
-NOT COMPLETED
-</div>
-
+<div class="card-head"><div class="card-icon">↻</div><span class="card-tag">TASK 03</span></div>
+<h3>REPOST + COMMENT</h3><p>Open the official post, repost it and leave a genuine comment.</p>
+<a class="btn yellow" id="engageButton" href="https://x.com/thehoodrover/status/2105640521725284569" target="_blank" rel="noopener noreferrer">OPEN X POST</a>
+<div class="task-state" id="engageState">NOT COMPLETED</div>
 </article>
-
 </section>
-
 
 <section class="submit-box reveal">
-
-<div class="submit-title">
-SUBMIT WHITELIST ENTRY
-</div>
-
-<div class="submit-sub">
-Finish the tasks above, then submit your X username and EVM wallet. Your entry will be saved to the whitelist database.
-</div>
-
+<div class="submit-title">SUBMIT WHITELIST ENTRY</div>
+<div class="submit-sub">Finish the tasks above, then submit your X username and EVM wallet. Your entry will be saved to the whitelist database.</div>
 <form id="whitelistForm">
-
 <div class="form-grid">
-
-<div class="field">
-
-<label for="twitterUsername">
-X USERNAME
-</label>
-
-<input
-id="twitterUsername"
-type="text"
-placeholder="@yourusername"
-maxlength="50"
-autocomplete="off"
-required>
-
+<div class="field"><label for="twitterUsername">X USERNAME</label><input id="twitterUsername" type="text" placeholder="@yourusername" maxlength="50" autocomplete="off" required></div>
+<div class="field"><label for="walletAddress">WALLET ADDRESS</label><input id="walletAddress" type="text" placeholder="0x..." maxlength="42" autocomplete="off" required></div>
 </div>
-
-
-<div class="field">
-
-<label for="walletAddress">
-WALLET ADDRESS
-</label>
-
-<input
-id="walletAddress"
-type="text"
-placeholder="0x..."
-maxlength="42"
-autocomplete="off"
-required>
-
-</div>
-
-</div>
-
-<div class="form-note">
-EVM wallet address only. Do not submit your seed phrase or private key.
-</div>
-
-<div class="submit-row">
-
-<button
-class="btn"
-id="submitButton"
-type="submit">
-SUBMIT FOR WHITELIST
-</button>
-
-<button
-class="btn secondary"
-id="resetButton"
-type="button">
-RESET TASKS
-</button>
-
-</div>
-
+<div class="form-note">EVM wallet address only. Do not submit your seed phrase or private key.</div>
+<div class="submit-row"><button class="btn" id="submitButton" type="submit">SUBMIT FOR WHITELIST</button></div>
 <div class="status" id="statusBox"></div>
-
 </form>
-
 </section>
 
+<div class="info reveal"><strong>WHITELIST SYSTEM</strong><span>One X username and one wallet address can be registered only once. X tasks use a 10-second completion timer and do not require X authentication. Complete the action on X while the timer runs, then submit your entry.</span></div>
 
-<div class="info reveal">
+</div></main>
 
-<strong>WHITELIST SYSTEM</strong>
+<footer><div class="wrap footer"><div><b>THE HOOD ROVER</b></div><div>RETRO SYSTEM // 2026</div></div></footer>
 
-<span>
-One X username and one wallet address can be registered only once.
-X tasks use a 10-second completion timer and do not require X authentication.
-Complete the action on X while the timer runs, then submit your entry.
-</span>
-
+<div class="modal-backdrop" id="successModal" role="dialog" aria-modal="true" aria-labelledby="successTitle">
+  <div class="success-modal">
+    <div class="success-top">WHITELIST.EXE // ENTRY ACCEPTED</div>
+    <div class="success-body">
+      <div class="success-icon">✓</div>
+      <h2 id="successTitle">SUBMIT COMPLETED!</h2>
+      <p>Your whitelist entry has been <strong>successfully registered</strong>.<br><br>Stay with our Twitter/X for mint details and future updates.</p>
+      <div class="success-actions">
+        <a class="btn" href="https://x.com/thehoodrover" target="_blank" rel="noopener noreferrer">FOLLOW OUR X</a>
+        <button class="btn secondary" id="closeSuccess" type="button">CLOSE</button>
+      </div>
+    </div>
+  </div>
 </div>
-
-</div>
-</main>
-
-
-<footer>
-
-<div class="wrap footer">
-
-<div>
-<b>THE HOOD ROVER</b>
-</div>
-
-<div>
-RETRO SYSTEM // 2026
-</div>
-
-</div>
-
-</footer>
-
 
 <script>
-
-/* =========================================
-   SUPABASE
-========================================= */
-
-const SUPABASE_URL =
-"https://hyshlvuywbwhhjgqwfwi.supabase.co";
-
-const SUPABASE_PUBLISHABLE_KEY =
-"sb_publishable_LWmPzfGLuzdjDZvnwKs0Ug_Gvs5yROF";
-
+const SUPABASE_URL="https://hyshlvuywbwhhjgqwfwi.supabase.co";
+const SUPABASE_PUBLISHABLE_KEY="sb_publishable_LWmPzfGLuzdjDZvnwKs0Ug_Gvs5yROF";
 const {createClient}=window.supabase;
-
-const supabaseClient=createClient(
-  SUPABASE_URL,
-  SUPABASE_PUBLISHABLE_KEY
-);
-
-
-/* =========================================
-   X TASK LINKS
-========================================= */
+const supabaseClient=createClient(SUPABASE_URL,SUPABASE_PUBLISHABLE_KEY);
 
 const X_TASK_URLS={
-
-  follow:
-  "https://x.com/thehoodrover",
-
-  like:
-  "https://x.com/thehoodrover/status/2105640521725284569",
-
-  engage:
-  "https://x.com/thehoodrover/status/2105640521725284569"
-
+  follow:"https://x.com/thehoodrover",
+  like:"https://x.com/thehoodrover/status/2105640521725284569",
+  engage:"https://x.com/thehoodrover/status/2105640521725284569"
 };
-
-
-/* =========================================
-   SETTINGS
-========================================= */
 
 const TASK_DURATION=10000;
+const TASK_STORAGE_KEY="hoodRoverWhitelistTasks";
 
-const TASK_STORAGE_KEY=
-"hoodRoverWhitelistTasks";
+const followButton=document.getElementById("followButton");
+const likeButton=document.getElementById("likeButton");
+const engageButton=document.getElementById("engageButton");
+const followState=document.getElementById("followState");
+const likeState=document.getElementById("likeState");
+const engageState=document.getElementById("engageState");
+const form=document.getElementById("whitelistForm");
+const submitButton=document.getElementById("submitButton");
+const statusBox=document.getElementById("statusBox");
+const successModal=document.getElementById("successModal");
+const closeSuccess=document.getElementById("closeSuccess");
 
-
-/* =========================================
-   ELEMENTS
-========================================= */
-
-const followButton=
-document.getElementById("followButton");
-
-const likeButton=
-document.getElementById("likeButton");
-
-const engageButton=
-document.getElementById("engageButton");
-
-const followState=
-document.getElementById("followState");
-
-const likeState=
-document.getElementById("likeState");
-
-const engageState=
-document.getElementById("engageState");
-
-const form=
-document.getElementById("whitelistForm");
-
-const submitButton=
-document.getElementById("submitButton");
-
-const resetButton=
-document.getElementById("resetButton");
-
-const statusBox=
-document.getElementById("statusBox");
-
-
-/* =========================================
-   TASK STATE
-========================================= */
-
-let taskState={
-  follow:false,
-  like:false,
-  engage:false
-};
-
-
-/* =========================================
-   LOAD SAVED TASKS
-========================================= */
+let taskState={follow:false,like:false,engage:false};
 
 function loadTaskState(){
-
   try{
-
-    const saved=
-      JSON.parse(
-        localStorage.getItem(TASK_STORAGE_KEY) || "{}"
-      );
-
-    taskState={
-      follow:Boolean(saved.follow),
-      like:Boolean(saved.like),
-      engage:Boolean(saved.engage)
-    };
-
-  }catch(error){
-
-    console.error(
-      "Task state load error:",
-      error
-    );
-
-    taskState={
-      follow:false,
-      like:false,
-      engage:false
-    };
-
+    const saved=JSON.parse(localStorage.getItem(TASK_STORAGE_KEY)||"{}");
+    taskState={follow:Boolean(saved.follow),like:Boolean(saved.like),engage:Boolean(saved.engage)};
+  }catch(e){
+    taskState={follow:false,like:false,engage:false};
   }
-
   updateTaskUI();
 }
 
-
-/* =========================================
-   SAVE TASKS
-========================================= */
-
 function saveTaskState(){
-
-  localStorage.setItem(
-    TASK_STORAGE_KEY,
-    JSON.stringify(taskState)
-  );
-
+  localStorage.setItem(TASK_STORAGE_KEY,JSON.stringify(taskState));
 }
-
-
-/* =========================================
-   UPDATE TASK UI
-   IMPORTANT:
-   This restores buttons after refresh.
-========================================= */
 
 function updateTaskUI(){
+  const items=[
+    [followButton,followState,taskState.follow,"FOLLOW COMPLETED ✓"],
+    [likeButton,likeState,taskState.like,"LIKE COMPLETED ✓"],
+    [engageButton,engageState,taskState.engage,"REPOST + COMMENT COMPLETED ✓"]
+  ];
 
-  /* FOLLOW */
-
-  if(taskState.follow){
-
-    followButton.textContent=
-      "FOLLOW COMPLETED ✓";
-
-    followButton.classList.remove("loading");
-
-    followButton.style.pointerEvents=
-      "none";
-
-    followButton.removeAttribute("href");
-
-    followState.textContent=
-      "TASK COMPLETED ✓";
-
-    followState.classList.add("done");
-
-  }else{
-
-    followButton.textContent=
-      "FOLLOW ON X";
-
-    followButton.style.pointerEvents=
-      "";
-
-    followButton.href=
-      X_TASK_URLS.follow;
-
-    followState.textContent=
-      "NOT COMPLETED";
-
-    followState.classList.remove("done");
-
-  }
-
-
-  /* LIKE */
-
-  if(taskState.like){
-
-    likeButton.textContent=
-      "LIKE COMPLETED ✓";
-
-    likeButton.classList.remove("loading");
-
-    likeButton.style.pointerEvents=
-      "none";
-
-    likeButton.removeAttribute("href");
-
-    likeState.textContent=
-      "TASK COMPLETED ✓";
-
-    likeState.classList.add("done");
-
-  }else{
-
-    likeButton.textContent=
-      "LIKE POST";
-
-    likeButton.style.pointerEvents=
-      "";
-
-    likeButton.href=
-      X_TASK_URLS.like;
-
-    likeState.textContent=
-      "NOT COMPLETED";
-
-    likeState.classList.remove("done");
-
-  }
-
-
-  /* REPOST + COMMENT */
-
-  if(taskState.engage){
-
-    engageButton.textContent=
-      "REPOST + COMMENT COMPLETED ✓";
-
-    engageButton.classList.remove("loading");
-
-    engageButton.style.pointerEvents=
-      "none";
-
-    engageButton.removeAttribute("href");
-
-    engageState.textContent=
-      "TASK COMPLETED ✓";
-
-    engageState.classList.add("done");
-
-  }else{
-
-    engageButton.textContent=
-      "OPEN X POST";
-
-    engageButton.style.pointerEvents=
-      "";
-
-    engageButton.href=
-      X_TASK_URLS.engage;
-
-    engageState.textContent=
-      "NOT COMPLETED";
-
-    engageState.classList.remove("done");
-
-  }
-
+  items.forEach(([button,stateEl,done,buttonText])=>{
+    stateEl.textContent=done?"TASK COMPLETED ✓":"NOT COMPLETED";
+    stateEl.classList.toggle("done",done);
+    if(done){
+      button.textContent=buttonText;
+      button.classList.remove("loading");
+      button.style.pointerEvents="";
+    }
+  });
 }
 
+function startXTask(key,button,stateEl){
+  if(taskState[key]) return;
 
-/* =========================================
-   START X TASK
-========================================= */
-
-function startXTask(
-  key,
-  button,
-  stateEl
-){
-
-  /* Already completed */
-
-  if(taskState[key]){
-    return;
-  }
-
-
-  /*
-    Open X immediately.
-    This prevents popup blockers.
-  */
-
-  window.open(
-    X_TASK_URLS[key],
-    "_blank",
-    "noopener,noreferrer"
-  );
-
+  window.open(X_TASK_URLS[key],"_blank","noopener,noreferrer");
 
   button.classList.add("loading");
+  button.style.pointerEvents="none";
 
-  button.style.pointerEvents=
-    "none";
+  let remaining=10;
+  stateEl.textContent=`CHECKING... ${remaining}s`;
+  button.textContent=`CHECKING... ${remaining}s`;
 
+  const timer=setInterval(()=>{
+    remaining--;
+    if(remaining>0){
+      stateEl.textContent=`CHECKING... ${remaining}s`;
+      button.textContent=`CHECKING... ${remaining}s`;
+      return;
+    }
 
-  let remaining=
-    TASK_DURATION / 1000;
-
-
-  stateEl.classList.remove("done");
-
-  stateEl.textContent=
-    `CHECKING... ${remaining}s`;
-
-  button.textContent=
-    `CHECKING... ${remaining}s`;
-
-
-  const timer=
-    setInterval(()=>{
-
-      remaining--;
-
-
-      if(remaining>0){
-
-        stateEl.textContent=
-          `CHECKING... ${remaining}s`;
-
-        button.textContent=
-          `CHECKING... ${remaining}s`;
-
-        return;
-
-      }
-
-
-      clearInterval(timer);
-
-
-      /*
-        Mark complete
-        and permanently save locally.
-      */
-
-      taskState[key]=true;
-
-      saveTaskState();
-
-      /*
-        IMPORTANT:
-        Update complete button state.
-      */
-
-      updateTaskUI();
-
-    },1000);
-
+    clearInterval(timer);
+    taskState[key]=true;
+    saveTaskState();
+    button.classList.remove("loading");
+    button.style.pointerEvents="";
+    button.textContent=key==="follow"?"FOLLOW COMPLETED ✓":key==="like"?"LIKE COMPLETED ✓":"REPOST + COMMENT COMPLETED ✓";
+    stateEl.textContent="TASK COMPLETED ✓";
+    stateEl.classList.add("done");
+  },1000);
 }
 
+followButton.onclick=(e)=>{e.preventDefault();startXTask("follow",followButton,followState)};
+likeButton.onclick=(e)=>{e.preventDefault();startXTask("like",likeButton,likeState)};
+engageButton.onclick=(e)=>{e.preventDefault();startXTask("engage",engageButton,engageState)};
 
-/* =========================================
-   X BUTTON EVENTS
-========================================= */
-
-followButton.onclick=(event)=>{
-
-  event.preventDefault();
-
-  startXTask(
-    "follow",
-    followButton,
-    followState
-  );
-
-};
-
-
-likeButton.onclick=(event)=>{
-
-  event.preventDefault();
-
-  startXTask(
-    "like",
-    likeButton,
-    likeState
-  );
-
-};
-
-
-engageButton.onclick=(event)=>{
-
-  event.preventDefault();
-
-  startXTask(
-    "engage",
-    engageButton,
-    engageState
-  );
-
-};
-
-
-/* =========================================
-   STATUS
-========================================= */
-
-function showStatus(
-  message,
-  type
-){
-
-  statusBox.textContent=
-    message;
-
-  statusBox.className=
-    "status show " + type;
-
+function showStatus(message,type){
+  statusBox.textContent=message;
+  statusBox.className="status show "+type;
 }
 
-
-/* =========================================
-   USERNAME
-========================================= */
-
-function normalizeUsername(value){
-
-  return String(value || "")
-    .trim()
-    .replace(/^@+/,"")
-    .toLowerCase();
-
+function normalizeUsername(v){
+  return String(v||"").trim().replace(/^@+/,"").toLowerCase();
 }
 
-
-/* =========================================
-   WALLET VALIDATION
-========================================= */
-
-function isValidEvmAddress(value){
-
-  return /^0x[a-fA-F0-9]{40}$/.test(
-    String(value || "").trim()
-  );
-
+function isValidEvmAddress(v){
+  return /^0x[a-fA-F0-9]{40}$/.test(String(v||"").trim());
 }
 
+function openSuccessModal(){
+  successModal.classList.add("show");
+  document.body.style.overflow="hidden";
+}
 
-/* =========================================
-   WHITELIST SUBMIT
-========================================= */
+function closeSuccessModal(){
+  successModal.classList.remove("show");
+  document.body.style.overflow="";
+}
 
-form.addEventListener(
-"submit",
-async(event)=>{
+closeSuccess.onclick=closeSuccessModal;
 
-  event.preventDefault();
+successModal.addEventListener("click",(e)=>{
+  if(e.target===successModal) closeSuccessModal();
+});
 
+document.addEventListener("keydown",(e)=>{
+  if(e.key==="Escape") closeSuccessModal();
+});
 
-  const twitterUsername=
-    normalizeUsername(
-      document.getElementById(
-        "twitterUsername"
-      ).value
-    );
+form.addEventListener("submit",async e=>{
+  e.preventDefault();
 
+  const twitterUsername=normalizeUsername(document.getElementById("twitterUsername").value);
+  const walletAddress=document.getElementById("walletAddress").value.trim().toLowerCase();
 
-  const walletAddress=
-    document.getElementById(
-      "walletAddress"
-    ).value
-    .trim()
-    .toLowerCase();
-
-
-  /* Check tasks */
-
-  if(
-    !taskState.follow ||
-    !taskState.like ||
-    !taskState.engage
-  ){
-
-    showStatus(
-      "PLEASE COMPLETE ALL 3 X TASKS FIRST.",
-      "error"
-    );
-
+  if(!taskState.follow||!taskState.like||!taskState.engage){
+    showStatus("PLEASE COMPLETE ALL 3 X TASKS FIRST.","error");
     return;
-
   }
-
-
-  /* Check username */
 
   if(!twitterUsername){
-
-    showStatus(
-      "PLEASE ENTER YOUR X USERNAME.",
-      "error"
-    );
-
+    showStatus("PLEASE ENTER YOUR X USERNAME.","error");
     return;
-
   }
-
-
-  /* Check wallet */
 
   if(!isValidEvmAddress(walletAddress)){
-
-    showStatus(
-      "PLEASE ENTER A VALID EVM WALLET ADDRESS.",
-      "error"
-    );
-
+    showStatus("PLEASE ENTER A VALID EVM WALLET ADDRESS.","error");
     return;
-
   }
 
-
   submitButton.disabled=true;
-
-  submitButton.textContent=
-    "SUBMITTING...";
-
+  submitButton.textContent="SUBMITTING...";
+  statusBox.className="status";
 
   try{
-
-    const {
-      data,
-      error
-    }=
-    await supabaseClient
+    const {data,error}=await supabaseClient
       .from("whitelist_entries")
       .insert({
-
-        twitter_username:
-          twitterUsername,
-
-        wallet_address:
-          walletAddress,
-
+        twitter_username:twitterUsername,
+        wallet_address:walletAddress,
         follow_task:true,
-
         like_task:true,
-
         repost_comment_task:true
-
       })
       .select()
       .single();
 
-
     if(error){
-
       if(error.code==="23505"){
-
-        throw new Error(
-          "THIS X USERNAME OR WALLET IS ALREADY REGISTERED."
-        );
-
+        throw new Error("THIS X USERNAME OR WALLET IS ALREADY REGISTERED.");
       }
-
       throw error;
-
     }
 
-
-    console.log(
-      "Whitelist entry:",
-      data
-    );
-
-
-    showStatus(
-      "WHITELIST ENTRY SUBMITTED SUCCESSFULLY ✓",
-      "success"
-    );
-
+    console.log("Whitelist entry:",data);
 
     form.reset();
+    taskState={follow:false,like:false,engage:false};
+    saveTaskState();
+    updateTaskUI();
 
+    openSuccessModal();
 
   }catch(error){
-
-    console.error(
-      "Whitelist submission error:",
-      error
-    );
-
-
-    showStatus(
-      error.message ||
-      "SUBMISSION FAILED. PLEASE TRY AGAIN.",
-      "error"
-    );
-
-
+    console.error("Whitelist submission error:",error);
+    showStatus(error.message||"SUBMISSION FAILED. PLEASE TRY AGAIN.","error");
   }finally{
-
     submitButton.disabled=false;
-
-    submitButton.textContent=
-      "SUBMIT FOR WHITELIST";
-
+    submitButton.textContent="SUBMIT FOR WHITELIST";
   }
-
 });
 
-
-/* =========================================
-   RESET TASKS
-========================================= */
-
-resetButton.onclick=()=>{
-
-  taskState={
-    follow:false,
-    like:false,
-    engage:false
-  };
-
-
-  saveTaskState();
-
-  updateTaskUI();
-
-
-  showStatus(
-    "TASK STATUS RESET.",
-    "success"
-  );
-
-};
-
-
-/* =========================================
-   REVEAL ANIMATION
-========================================= */
-
-const observer=
-new IntersectionObserver(
-entries=>{
-
-  entries.forEach(
-    (entry,index)=>{
-
-      if(entry.isIntersecting){
-
-        setTimeout(
-          ()=>{
-            entry.target.classList.add(
-              "visible"
-            );
-          },
-          index*70
-        );
-
-        observer.unobserve(
-          entry.target
-        );
-
-      }
-
+const observer=new IntersectionObserver(entries=>{
+  entries.forEach((entry,index)=>{
+    if(entry.isIntersecting){
+      setTimeout(()=>entry.target.classList.add("visible"),index*70);
+      observer.unobserve(entry.target);
     }
-  );
+  });
+},{threshold:.08});
 
-},
-{
-  threshold:.08
-});
-
-
-document
-  .querySelectorAll(".reveal")
-  .forEach(
-    el=>observer.observe(el)
-  );
-
-
-/* =========================================
-   INITIAL LOAD
-========================================= */
-
+document.querySelectorAll(".reveal").forEach(el=>observer.observe(el));
 loadTaskState();
-
 </script>
-
 </body>
 </html>
